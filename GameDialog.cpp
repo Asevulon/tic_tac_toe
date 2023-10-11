@@ -55,7 +55,7 @@ void GameDialog::OnBnClickedOk()
 		data[4] = 1;
 		zeros--;
 	}
-	
+	if (gm == nvp)PostMessage(MS_DONEURONTURN);
 	drw.Invalidate();
 }
 

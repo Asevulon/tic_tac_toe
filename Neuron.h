@@ -39,6 +39,8 @@ public:
 	void NW::Mutate();
 
 	double score;
+	double avscore;
+	bool killme = false;
 };
 
 
@@ -46,7 +48,7 @@ public:
 class Trainer
 {
 private:
-	static const int _size;
+	static const int _size = 100;
 	vector<NW>P1;
 	vector<NW>P2;
 
@@ -57,4 +59,5 @@ public:
 	Trainer();
 
 	inline void score(NW& p1, NW& p2);
+	void train();
 };

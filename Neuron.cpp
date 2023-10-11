@@ -247,3 +247,81 @@ void Trainer::score(NW& p1, NW& p2)
 		}
 	}
 }
+
+
+void Trainer::train()
+{
+	int counter = 0;
+	while (1)
+	{
+		for (int i = 0; i < _size; i++)
+		{
+			P1[i].avscore = 0;
+			P2[i].avscore = 0;
+		}
+
+		for (int i = 0; i < _size; i++)
+		{
+			for (int j = 0; j < _size; j++)
+			{
+				score(P1[i], P2[j]);
+				P1[i].avscore += P1[i].score;
+				P2[j].avscore += P2[j].score;
+			}
+		}
+
+
+		for (int i = 0; i < _size; i+=2)
+		{
+			if (P1[i].avscore < P1[i + 1].avscore)
+			{
+				P1[i].killme = true;
+				P1[i + 1].killme = false;
+			}
+			else
+			{
+				P1[i].killme = false;
+				P1[i + 1].killme = true;
+			}
+			
+			if (P2[i].avscore < P2[i + 1].avscore)
+			{
+				P2[i].killme = true;
+				P2[i + 1].killme = false;
+			}
+			else
+			{
+				P2[i].killme = false;
+				P2[i + 1].killme = true;
+			}
+		}
+		for (auto iter = P1.begin(); iter != P1.end(); iter++)
+		{
+			if (iter->killme)P1.erase(iter);
+		}
+		for (auto iter = P2.begin(); iter != P2.end(); iter++)
+		{
+			if (iter->killme)P2.erase(iter);
+		}
+
+		for (int i = 0; i < P1.size(); i++)
+		{
+			P1[i].Mutate();
+		}
+		for (int i = 0; i < P2.size(); i++)
+		{
+			P2[i].Mutate();
+		}
+
+		for (int i = 0; i < _size / 2; i++)
+		{
+			int id = rand(0, _size / 2. - 1);
+			while (id == i)id = rand(0, _size / 2. - 1);
+			P1.push_back(P1[i].MakeChild(P1[id]));
+			P2.push_back(P2[i].MakeChild(P2[id]));
+		}
+
+		counter++;
+		if (counter > 100)break;
+	}
+}

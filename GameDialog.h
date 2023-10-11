@@ -3,10 +3,10 @@
 
 #include"Drawer.h"
 // Диалоговое окно GameDialog
-#define DRAW 1000
-#define MS_BOTTURN WM_USER + 2
-#define MS_DETERMINEWINNERONBOTTURN WM_USER + 3
-
+#define DRAW							1000
+#define MS_BOTTURN						WM_USER + 2
+#define MS_DETERMINEWINNERONBOTTURN		WM_USER + 3
+#define MS_DONEURONTURN					WM_USER + 4
 class GameDialog : public CDialogEx
 {
 	DECLARE_DYNAMIC(GameDialog)
@@ -35,7 +35,9 @@ public:
 	{
 		pvp,
 		pve,
-		evp
+		evp,
+		pvn,
+		nvp
 	};
 	GameMode gm;
 protected:
