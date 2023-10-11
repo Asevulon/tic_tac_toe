@@ -33,6 +33,7 @@ BEGIN_MESSAGE_MAP(GameDialog, CDialogEx)
 	ON_MESSAGE(MS_DETERMINEWINNER, &GameDialog::OnMsDeterminewinner)
 	ON_MESSAGE(MS_DETERMINEWINNERONBOTTURN, &GameDialog::OnMsDeterminewinnerOnBotTurn)
 	ON_MESSAGE(MS_BOTTURN, &GameDialog::OnMsBotturn)
+	ON_MESSAGE(MS_DONEURONTURN, &GameDialog::OnMsDoBotTurn)
 END_MESSAGE_MAP()
 
 
@@ -49,6 +50,7 @@ void GameDialog::OnBnClickedOk()
 	zeros = 9;
 	drw.stop = false;
 	drw.turn = true;
+	drw.init = true;
 	if (gm == evp)
 	{
 		drw.turn = false;
@@ -56,6 +58,7 @@ void GameDialog::OnBnClickedOk()
 		zeros--;
 	}
 	if (gm == nvp)PostMessage(MS_DONEURONTURN);
+	
 	drw.Invalidate();
 }
 
@@ -72,22 +75,22 @@ BOOL GameDialog::OnInitDialog()
 }
 
 
-int FindWinner(vector<int>& data, int zeros)
-{
-	if ((data[0] == data[1]) && (data[0] == data[2]) && (data[0] != 0))return data[0];
-	if ((data[3] == data[4]) && (data[3] == data[5]) && (data[3] != 0))return data[3];
-	if ((data[6] == data[7]) && (data[6] == data[8]) && (data[6] != 0))return data[6];
-
-	if ((data[0] == data[3]) && (data[0] == data[6]) && (data[0] != 0))return data[0];
-	if ((data[1] == data[4]) && (data[1] == data[7]) && (data[1] != 0))return data[1];
-	if ((data[2] == data[5]) && (data[2] == data[8]) && (data[2] != 0))return data[2];
-
-	if ((data[0] == data[4]) && (data[0] == data[8]) && (data[0] != 0))return data[0];
-	if ((data[2] == data[4]) && (data[2] == data[6]) && (data[2] != 0))return data[2];
-
-	if (zeros == 0)return DRAW;
-	return 0;
-}
+//int FindWinner(vector<int>& data, int zeros)
+//{
+//	if ((data[0] == data[1]) && (data[0] == data[2]) && (data[0] != 0))return data[0];
+//	if ((data[3] == data[4]) && (data[3] == data[5]) && (data[3] != 0))return data[3];
+//	if ((data[6] == data[7]) && (data[6] == data[8]) && (data[6] != 0))return data[6];
+//
+//	if ((data[0] == data[3]) && (data[0] == data[6]) && (data[0] != 0))return data[0];
+//	if ((data[1] == data[4]) && (data[1] == data[7]) && (data[1] != 0))return data[1];
+//	if ((data[2] == data[5]) && (data[2] == data[8]) && (data[2] != 0))return data[2];
+//
+//	if ((data[0] == data[4]) && (data[0] == data[8]) && (data[0] != 0))return data[0];
+//	if ((data[2] == data[4]) && (data[2] == data[6]) && (data[2] != 0))return data[2];
+//
+//	if (zeros == 0)return DRAW;
+//	return 0;
+//}
 
 afx_msg LRESULT GameDialog::OnMsDeterminewinner(WPARAM wParam, LPARAM lParam)
 {
@@ -96,6 +99,7 @@ afx_msg LRESULT GameDialog::OnMsDeterminewinner(WPARAM wParam, LPARAM lParam)
 	if (res == 0)
 	{
 		if((gm == pve) || (gm == evp))PostMessage(MS_BOTTURN);
+		if ((gm == pvn) || (gm == nvp))PostMessage(MS_DONEURONTURN);
 		return 0;
 	}
 
@@ -234,6 +238,27 @@ afx_msg LRESULT GameDialog::OnMsBotturn(WPARAM wParam, LPARAM lParam)
 	bool bot = true;
 	if (gm == pve)bot = false;
 	minmax(data, zeros, val, bot, 0);
+	data[g_id] = val;
+	drw.turn = !drw.turn;
+	PostMessage(MS_DETERMINEWINNERONBOTTURN);
+	return 0;
+}
+
+
+afx_msg LRESULT GameDialog::OnMsDoBotTurn(WPARAM wParam, LPARAM lParam)
+{
+	int val = 1;
+	if (drw.turn == 0)val = -1;
+	if (gm == pvn)g_id = P2->Calc(data);
+	if (gm == nvp)g_id = P1->Calc(data);
+	if (data[g_id] != 0)
+	{
+		CString str;
+		str.Format(L"Нейросеть сделала запрещенный ход (%d).", g_id);
+		MessageBox(str, L"Ошибка", MB_ICONERROR);
+		drw.stop = true;
+		return 0;
+	}
 	data[g_id] = val;
 	drw.turn = !drw.turn;
 	PostMessage(MS_DETERMINEWINNERONBOTTURN);

@@ -20,6 +20,7 @@ public:
 	HWND parent;
 	bool stop = false;
 	bool turn = true;
+	bool init = false;
 	std::vector<int>* m_data;
 	DECLARE_MESSAGE_MAP()
 		afx_msg void OnLButtonUp(UINT nFlags, CPoint point);

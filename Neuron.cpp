@@ -24,15 +24,17 @@ NW::NW(vector<int>& LS, int Enters)
 {
 	ls = LS;
 
+	Layer.push_back(vector<neuron>());
 	for (int i = 0; i < LS[0]; i++)
 	{
-		Layer[0][i] = neuron(Enters);
+		Layer[0].push_back(neuron(Enters));
 	}
 	for (int i = 1; i < LS.size(); i++)
 	{
+		Layer.push_back(vector<neuron>());
 		for (int j = 0; j < LS[i]; j++)
 		{
-			Layer[i][j] = neuron(LS[i - 1]);
+			Layer[i].push_back(neuron(LS[i - 1]));
 		}
 	}
 }
@@ -71,6 +73,7 @@ int NW::Calc(vector<double>& in)
 	{
 		res = (res << 1) & (int)round(tin[i]);
 	}
+	return res;
 }
 int NW::Calc(vector<int>& in)
 {
@@ -94,8 +97,10 @@ int NW::Calc(vector<int>& in)
 	int res = 0;
 	for (int i = 3; i > -1; i--)
 	{
-		res = (res << 1) & (int)round(tin[i]);
+		res |= (int)round(tin[i]);
+		res <<= 1;
 	}
+	return res;
 }
 
 double NW::f(double x)
@@ -128,7 +133,7 @@ NW NW::MakeChild(NW& nw)
 
 void NW::Mutate()
 {
-	double M = 0.1 * (PERFECT_SCORE - score) / PERFECT_SCORE;
+	double M = 0.1 * (PERFECT_SCORE - avscore) / PERFECT_SCORE;
 	for (int i = 0; i < Layer.size(); i++)
 	{
 		for (int j = 0; j < Layer[i].size(); j++)
@@ -150,7 +155,6 @@ Trainer::Trainer()
 {
 	srand(time(NULL));
 
-	vector<int>LS = { 9,14,9,4 };
 
 	for (int i = 0; i < _size; i++)
 	{
@@ -162,7 +166,6 @@ Trainer::Trainer()
 }
 
 
-#define DRAW 1000
 inline int FindWinner(vector<int>& data, int zeros)
 {
 	if ((data[0] == data[1]) && (data[0] == data[2]) && (data[0] != 0))return data[0];
@@ -190,12 +193,19 @@ void Trainer::score(NW& p1, NW& p2)
 		int pos = p1.Calc(data);
 		deep++;
 		zeroes--;
+		if (pos > 9)
+		{
+			p1.score = deep - 100;
+			p2.score = 10 - deep;
+			break;
+		}
 		if (data[pos] != 0)
 		{
 			p1.score = deep - 100;
 			p2.score = 10 - deep;
 			break;
 		}
+		data[pos] = 1;
 		winner = FindWinner(data, zeroes);
 		if (winner == DRAW)
 		{
@@ -220,12 +230,19 @@ void Trainer::score(NW& p1, NW& p2)
 		pos = p2.Calc(data);
 		deep++;
 		zeroes--;
+		if (pos > 9)
+		{
+			p1.score = 10 - deep;
+			p2.score = deep - 100;
+			break;
+		}
 		if (data[pos] != 0)
 		{
 			p1.score = 10 - deep;
 			p2.score = deep - 100;
 			break;
 		}
+		data[pos] = -1;
 		winner = FindWinner(data, zeroes);
 		if (winner == DRAW)
 		{
@@ -251,9 +268,14 @@ void Trainer::score(NW& p1, NW& p2)
 
 void Trainer::train()
 {
+	vector<NW> newp1;
+	vector<NW> newp2;
 	int counter = 0;
+	
 	while (1)
 	{
+		double avscore1 = 0;
+		double avscore2 = 0;
 		for (int i = 0; i < _size; i++)
 		{
 			P1[i].avscore = 0;
@@ -273,6 +295,8 @@ void Trainer::train()
 
 		for (int i = 0; i < _size; i+=2)
 		{
+			avscore1 += (P1[i].avscore + P1[i + 1].avscore) / _size;
+			avscore2 += (P2[i].avscore + P2[i + 1].avscore) / _size;
 			if (P1[i].avscore < P1[i + 1].avscore)
 			{
 				P1[i].killme = true;
@@ -295,14 +319,23 @@ void Trainer::train()
 				P2[i + 1].killme = true;
 			}
 		}
+		avscore1 /= _size;
+		avscore2 /= _size;
+		
+
 		for (auto iter = P1.begin(); iter != P1.end(); iter++)
 		{
-			if (iter->killme)P1.erase(iter);
+			if (!iter->killme)newp1.push_back(*iter);
+			
 		}
 		for (auto iter = P2.begin(); iter != P2.end(); iter++)
 		{
-			if (iter->killme)P2.erase(iter);
+			if (!iter->killme)newp2.push_back(*iter);
 		}
+		P1 = newp1;
+		P2 = newp2;
+		newp1.clear();
+		newp2.clear();
 
 		for (int i = 0; i < P1.size(); i++)
 		{
@@ -321,7 +354,25 @@ void Trainer::train()
 			P2.push_back(P2[i].MakeChild(P2[id]));
 		}
 
+		PostMessageW(parent, MS_INCRBAR, NULL, NULL);
 		counter++;
-		if (counter > 100)break;
+		if (counter > TrainLimit)break;
+		if ((fabs(avscore1) < 9) && (fabs(avscore2) < 9))break;
 	}
+}
+
+void Trainer::GetBest(link& p1, link& p2)
+{
+	int maxp1 = 0;
+	int maxp2 = 0;
+	for (int i = 0; i < _size; i++)
+	{
+		if (P1[maxp1].avscore < P1[i].avscore)maxp1 = i;
+		if (P2[maxp2].avscore < P2[i].avscore)maxp2 = i;
+	}
+
+	if (p1 != nullptr)delete p1;
+	if (p2 != nullptr)delete p2;
+	p1 = new NW(P1[maxp1]);
+	p2 = new NW(P2[maxp2]);
 }

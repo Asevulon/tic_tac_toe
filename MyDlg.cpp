@@ -27,6 +27,8 @@ void MyDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_COMBO1, GameMode);
+	DDX_Control(pDX, IDC_PROGRESS1, ProgBar);
+	DDX_Control(pDX, IDOK, StarCtr);
 }
 
 BEGIN_MESSAGE_MAP(MyDlg, CDialogEx)
@@ -34,6 +36,8 @@ BEGIN_MESSAGE_MAP(MyDlg, CDialogEx)
 	ON_WM_QUERYDRAGICON()
 	ON_CBN_SELCHANGE(IDC_COMBO1, &MyDlg::OnSelchangeGameMode)
 	ON_BN_CLICKED(IDOK, &MyDlg::OnBnClickedOk)
+	ON_BN_CLICKED(IDC_BUTTON1, &MyDlg::OnBnClickedButton1)
+	ON_MESSAGE(MS_INCRBAR, &MyDlg::OnMsIncrBar)
 END_MESSAGE_MAP()
 
 
@@ -52,6 +56,8 @@ BOOL MyDlg::OnInitDialog()
 	GameMode.SetCurSel(GameMode.AddString(L"2 игрока"));
 	GameMode.AddString(L"Игрок против Minmax");
 	GameMode.AddString(L"Minmax против Игрока");
+	GameMode.AddString(L"Игрок против Нейросети");
+	GameMode.AddString(L"Нейросеть против Игрока");
 	return TRUE;  // возврат значения TRUE, если фокус не передан элементу управления
 }
 
@@ -109,10 +115,56 @@ void MyDlg::OnBnClickedOk()
 	CString str;
 	GameMode.GetLBText(id, str);
 	GameDialog gd;
+
 	if (str == L"2 игрока")gd.gm = GameDialog::pvp;
 	else
 		if (str == L"Игрок против Minmax")gd.gm = GameDialog::pve;
 		else
 			if (str == L"Minmax против Игрока")gd.gm = GameDialog::evp;
+			else
+				if (str == L"Игрок против Нейросети")
+				{
+					gd.gm = GameDialog::pvn;
+					if (p2 == nullptr)return;
+					gd.P2 = p2;
+				}
+				else
+					if (str == L"Нейросеть против Игрока")
+					{
+						gd.gm = GameDialog::nvp;
+						if (p1 == nullptr)return;
+						gd.P1 = p1;
+					}
 	gd.DoModal();
+}
+
+
+DWORD WINAPI ThreadFunc(LPVOID p)
+{
+	MyDlg* dlg = (MyDlg*)p;
+	dlg->tr = Trainer();
+	dlg->ProgBar.SetRange(0, dlg->tr.TrainLimit);
+	dlg->ProgBar.SetStep(1);
+	dlg->ProgBar.SetPos(0);
+	dlg->tr.parent = dlg->GetSafeHwnd();
+	dlg->tr.train();
+	dlg->tr.GetBest(dlg->p1, dlg->p2);
+	dlg->StarCtr.EnableWindow(TRUE);
+	return 0;
+}
+void MyDlg::OnBnClickedButton1()
+{
+	// TODO: добавьте свой код обработчика уведомлений
+	StarCtr.EnableWindow(FALSE);
+
+	TerminateThread(thr, 0);
+	thr = CreateThread(NULL, NULL, ThreadFunc, this, NULL, NULL);
+
+}
+
+afx_msg LRESULT MyDlg::OnMsIncrBar(WPARAM wParam, LPARAM lParam)
+{
+	
+	ProgBar.StepIt();
+	return 0;
 }

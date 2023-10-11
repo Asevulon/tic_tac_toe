@@ -34,4 +34,14 @@ public:
 	CComboBox GameMode;
 	afx_msg void OnSelchangeGameMode();
 	afx_msg void OnBnClickedOk();
+	afx_msg void OnBnClickedButton1();
+
+	NW* p1 = nullptr;
+	NW* p2 = nullptr;
+	CProgressCtrl ProgBar;
+	afx_msg LRESULT OnMsIncrBar(WPARAM wParam, LPARAM lParam);
+
+	HANDLE thr;
+	CButton StarCtr;
+	Trainer tr;
 };

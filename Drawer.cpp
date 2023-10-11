@@ -151,22 +151,24 @@ END_MESSAGE_MAP()
 void Drawer::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: добавьте свой код обработчика сообщений или вызов стандартного
-	if(!stop)
-	{
-		double WidthStep = width / 3;
-		double HeightStep = height / 3;
-		int i = point.y / HeightStep;
-		int j = point.x / WidthStep;
-
-		std::vector<int>& data = *m_data;
-		if (data[i * 3 + j] == 0)
+	if (init) {
+		if (!stop)
 		{
-			if (turn)data[i * 3 + j] = 1;
-			else data[i * 3 + j] = -1;
-			turn = !turn;
+			double WidthStep = width / 3;
+			double HeightStep = height / 3;
+			int i = point.y / HeightStep;
+			int j = point.x / WidthStep;
+
+			std::vector<int>& data = *m_data;
+			if (data[i * 3 + j] == 0)
+			{
+				if (turn)data[i * 3 + j] = 1;
+				else data[i * 3 + j] = -1;
+				turn = !turn;
+			}
+			Invalidate();
+			PostMessageA(parent, MS_DETERMINEWINNER, NULL, NULL);
 		}
-		Invalidate();
-		PostMessageA(parent, MS_DETERMINEWINNER, NULL, NULL);
 	}
 	CStatic::OnRButtonUp(nFlags, point);
 }

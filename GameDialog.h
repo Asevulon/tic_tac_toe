@@ -2,6 +2,7 @@
 #include "afxdialogex.h"
 
 #include"Drawer.h"
+#include"Neuron.h"
 // Диалоговое окно GameDialog
 #define DRAW							1000
 #define MS_BOTTURN						WM_USER + 2
@@ -40,9 +41,14 @@ public:
 		nvp
 	};
 	GameMode gm;
+
+
+	NW* P1 = nullptr;
+	NW* P2 = nullptr;
 protected:
 	afx_msg LRESULT OnMsDeterminewinner(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT OnMsBotturn(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnMsDoBotTurn(WPARAM wParam, LPARAM lParam);
 	afx_msg LRESULT GameDialog::OnMsDeterminewinnerOnBotTurn(WPARAM wParam, LPARAM lParam);
 };
 
