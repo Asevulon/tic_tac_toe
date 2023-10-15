@@ -166,7 +166,7 @@ int Max(vector<int>& p)
 	{
 		if (p[i] == INT_MAX)
 		{
-			if(move)res++;
+			if (move)res++;
 			continue;
 		}
 		else
@@ -249,16 +249,8 @@ afx_msg LRESULT GameDialog::OnMsDoBotTurn(WPARAM wParam, LPARAM lParam)
 {
 	int val = 1;
 	if (drw.turn == 0)val = -1;
-	if (gm == pvn)g_id = P2->Calc(data);
-	if (gm == nvp)g_id = P1->Calc(data);
-	if (data[g_id] != 0)
-	{
-		CString str;
-		str.Format(L"Нейросеть сделала запрещенный ход (%d).", g_id);
-		MessageBox(str, L"Ошибка", MB_ICONERROR);
-		drw.stop = true;
-		return 0;
-	}
+	if (gm == pvn)g_id = P2->MakePredictions(data, -1);
+	if (gm == nvp)g_id = P1->MakePredictions(data, 1);
 	data[g_id] = val;
 	drw.turn = !drw.turn;
 	PostMessage(MS_DETERMINEWINNERONBOTTURN);

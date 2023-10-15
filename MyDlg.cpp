@@ -29,6 +29,7 @@ void MyDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO1, GameMode);
 	DDX_Control(pDX, IDC_PROGRESS1, ProgBar);
 	DDX_Control(pDX, IDOK, StarCtr);
+	DDX_Control(pDX, IDC_PROGTXT, ProgTxtCtr);
 }
 
 BEGIN_MESSAGE_MAP(MyDlg, CDialogEx)
@@ -166,5 +167,8 @@ afx_msg LRESULT MyDlg::OnMsIncrBar(WPARAM wParam, LPARAM lParam)
 {
 	
 	ProgBar.StepIt();
+	CString str;
+	str.Format(L"%d", ProgBar.GetPos());
+	ProgTxtCtr.SetWindowTextW(str);
 	return 0;
 }

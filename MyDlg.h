@@ -44,4 +44,5 @@ public:
 	HANDLE thr;
 	CButton StarCtr;
 	Trainer tr;
+	CStatic ProgTxtCtr;
 };
