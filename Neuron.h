@@ -35,7 +35,7 @@ public:
 
 	template<typename T>
 	inline double Calc(vector<T>& in);
-	inline NW NW::MakeChild(NW& nw);
+	inline void NW::MakeChild(NW& left, NW& right);
 	inline void NW::Mutate();
 	inline int MakePredictions(vector<int>& in, int turn);
 
@@ -52,8 +52,8 @@ class Trainer
 private:
 	vector<NW>P1;
 	vector<NW>P2;
-	static const int _size = 50;
-	vector<int>LS = { 9,14,9,1 };
+	static const int _size = 30;
+	vector<int>LS = { 9,14,14,1 };
 
 
 protected:

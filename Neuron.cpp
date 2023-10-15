@@ -80,10 +80,8 @@ double NW::f(double x)
 }
 
 
-NW NW::MakeChild(NW& nw)
+void NW::MakeChild(NW& left, NW& right)
 {
-	NW res(ls, 9);
-
 	double chance = 0;
 	for (int i = 0; i < Layer.size(); i++)
 	{
@@ -92,19 +90,17 @@ NW NW::MakeChild(NW& nw)
 			for (int k = 0; k < Layer[i][j].w.size(); k++)
 			{
 				chance = rand(0, 1);
-				res.Layer[i][j].w[k] = chance * Layer[i][j].w[k] + (1 - chance) * nw.Layer[i][j].w[k];
+				Layer[i][j].w[k] = chance * left.Layer[i][j].w[k] + (1 - chance) * right.Layer[i][j].w[k];
 			}
 			chance = rand(0, 1);
-			res.Layer[i][j].fi = chance * Layer[i][j].fi + (1 - chance) * nw.Layer[i][j].fi;
+			Layer[i][j].fi = chance * left.Layer[i][j].fi + (1 - chance) * right.Layer[i][j].fi;
 		}
 	}
-	
-	return res;
 }
 
 void NW::Mutate()
 {
-	double M = 0.1 * (PERFECT_SCORE - avscore) / PERFECT_SCORE;
+	double M = 0.075 * (PERFECT_SCORE - avscore) / PERFECT_SCORE;
 	for (int i = 0; i < Layer.size(); i++)
 	{
 		for (int j = 0; j < Layer[i].size(); j++)
@@ -230,14 +226,16 @@ void Trainer::score(NW& p1, NW& p2)
 	}
 }
 
+double avscore1 = 0;
+double avscore2 = 0; 
+pair<double, double>avscr;
 
 void Trainer::train()
 {
 	vector<NW> newp1;
 	vector<NW> newp2;
 	int counter = 0;
-	double avscore1 = 0;
-	double avscore2 = 0;
+	
 	while (1)
 	{
 		avscore1 = 0;
@@ -261,8 +259,12 @@ void Trainer::train()
 
 		for (int i = 0; i < _size; i+=2)
 		{
-			avscore1 += (P1[i].avscore + P1[i + 1].avscore) / _size;
-			avscore2 += (P2[i].avscore + P2[i + 1].avscore) / _size;
+			P1[i].avscore /= _size;
+			P1[i + 1].avscore /= _size;
+			P2[i].avscore /= _size;
+			P2[i + 1].avscore /= _size;
+			avscore1 += P1[i].avscore + P1[i + 1].avscore;
+			avscore2 += P2[i].avscore + P2[i + 1].avscore;
 			if (P1[i].avscore < P1[i + 1].avscore)
 			{
 				P1[i].killme = true;
@@ -287,41 +289,42 @@ void Trainer::train()
 		}
 		avscore1 /= _size;
 		avscore2 /= _size;
-		
+		avscr.first = avscore1;
+		avscr.second = avscore2;
 
 		for (int i = 0; i < _size; i++)
 		{
 			if (P1[i].killme)
 			{
-				static int id1 = rand(0, _size);
-				static int id2 = rand(0, _size);
-				while (P1[id1].killme)id1 = rand(0, _size);
-				while (P1[id2].killme)id2 = rand(0, _size);
-				P1[i] = P1[id1].MakeChild(P1[id2]);
-
-				id1 = rand(0, _size);
-				id2 = rand(0, _size);
-				while (P2[id1].killme)id1 = rand(0, _size);
-				while (P2[id2].killme)id2 = rand(0, _size);
-				P2[i] = P2[id1].MakeChild(P2[id2]);
+				static int id1 = rand(0, _size - 1);
+				static int id2 = rand(0, _size - 1);
+				while (P1[id1].killme)id1 = rand(0, _size - 1);
+				while (P1[id2].killme)id2 = rand(0, _size - 1);
+				P1[i].MakeChild(P1[id1], P1[id2]);
+			}
+			if(P2[i].killme)
+			{
+				static int id1 = rand(0, _size - 1);
+				static int id2 = rand(0, _size - 1);
+				while (P2[id1].killme)id1 = rand(0, _size - 1);
+				while (P2[id2].killme)id2 = rand(0, _size - 1);
+				P2[i].MakeChild(P2[id1], P2[id2]);
 			}
 		}
 
 		for (int i = 0; i < P1.size(); i++)
 		{
 			P1[i].Mutate();
-		}
-		for (int i = 0; i < P2.size(); i++)
-		{
 			P2[i].Mutate();
+
 		}
 
 		
 
-		PostMessageW(parent, MS_INCRBAR, NULL, NULL);
+		PostMessageW(parent, MS_INCRBAR, NULL, (LPARAM) & avscr);
 		counter++;
 		if (counter > TrainLimit)break;
-		if ((fabs(avscore1) < 0.1) && (fabs(avscore2) < 0.1))break;
+		if ((fabs(avscore1 - 9) < 0.1) && (fabs(avscore2 - 9) < 0.1))break;
 	}
 }
 

@@ -139,12 +139,11 @@ void MyDlg::OnBnClickedOk()
 	gd.DoModal();
 }
 
-
 DWORD WINAPI ThreadFunc(LPVOID p)
 {
 	MyDlg* dlg = (MyDlg*)p;
 	dlg->tr = Trainer();
-	dlg->ProgBar.SetRange(0, dlg->tr.TrainLimit);
+	dlg->ProgBar.SetRange(0, dlg->tr.TrainLimit + 1);
 	dlg->ProgBar.SetStep(1);
 	dlg->ProgBar.SetPos(0);
 	dlg->tr.parent = dlg->GetSafeHwnd();
@@ -168,7 +167,8 @@ afx_msg LRESULT MyDlg::OnMsIncrBar(WPARAM wParam, LPARAM lParam)
 	
 	ProgBar.StepIt();
 	CString str;
-	str.Format(L"%d", ProgBar.GetPos());
+	pair<double, double>*avscr = (pair<double,double>*)lParam;
+	str.Format(L"%d, %.2lf, %.2lf", ProgBar.GetPos(), avscr->first, avscr->second);
 	ProgTxtCtr.SetWindowTextW(str);
 	return 0;
 }
