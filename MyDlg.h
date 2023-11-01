@@ -45,4 +45,5 @@ public:
 	CButton StarCtr;
 	Trainer tr;
 	CStatic ProgTxtCtr;
+	afx_msg void OnBnClickedButton2();
 };

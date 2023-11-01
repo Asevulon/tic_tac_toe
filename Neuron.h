@@ -4,11 +4,11 @@
 #include<vector>
 using namespace std;
 
-#define PERFECT_SCORE 10.
+#define PERFECT_SCORE 27.
+#define DRAW_SCORE 9
 #define MS_INCRBAR WM_USER + 5
 struct neuron
 {
-	vector<double> in;
 	double out = 0;
 
 	vector<double> w;
@@ -26,7 +26,7 @@ private:
 	vector<int>LayerSize;
 
 	vector<int>ls;
-
+	const double MutationVal = 0.5;
 protected:
 	inline void ProcessNeuron(neuron& n, vector<double>& in, int len);
 	inline double f(double x);
@@ -45,6 +45,8 @@ public:
 };
 
 
+const double MutationVaraity = 0.5;
+const double KillVaraity = 0.5;
 
 typedef  NW* link;
 class Trainer
@@ -52,11 +54,14 @@ class Trainer
 private:
 	vector<NW>P1;
 	vector<NW>P2;
-	static const int _size = 30;
-	vector<int>LS = { 9,14,14,1 };
-
+	static const int _size = 64;
+	static const int _gamesvsrand = 50;
+	vector<int>LS = { 9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,1 };
 
 protected:
+	inline int Roulete(vector<NW>& data);
+	void Trainer::scoreVSrandom(NW& p, int turn);
+
 public:
 	int TrainLimit = 1000;
 	Trainer();
@@ -64,9 +69,19 @@ public:
 	void GetBest(link& p1, link& p2);
 	inline void score(NW& p1, NW& p2);
 	void train();
+	bool stop = false;
 };
 
 #define DRAW 1000
 
 inline int FindWinner(std::vector<int>& data, int zeros);
 inline int Max(std::vector<double>& p);
+
+
+struct TrainerInfo
+{
+	double av1 = 0;
+	double av2 = 0;
+	int win1 = 0;
+	int win2 = 0;
+};

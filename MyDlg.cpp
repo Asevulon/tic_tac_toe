@@ -39,6 +39,7 @@ BEGIN_MESSAGE_MAP(MyDlg, CDialogEx)
 	ON_BN_CLICKED(IDOK, &MyDlg::OnBnClickedOk)
 	ON_BN_CLICKED(IDC_BUTTON1, &MyDlg::OnBnClickedButton1)
 	ON_MESSAGE(MS_INCRBAR, &MyDlg::OnMsIncrBar)
+	ON_BN_CLICKED(IDC_BUTTON2, &MyDlg::OnBnClickedButton2)
 END_MESSAGE_MAP()
 
 
@@ -167,8 +168,14 @@ afx_msg LRESULT MyDlg::OnMsIncrBar(WPARAM wParam, LPARAM lParam)
 	
 	ProgBar.StepIt();
 	CString str;
-	pair<double, double>*avscr = (pair<double,double>*)lParam;
-	str.Format(L"%d, %.2lf, %.2lf", ProgBar.GetPos(), avscr->first, avscr->second);
+	TrainerInfo*tf = (TrainerInfo*)lParam;
+	str.Format(L"%d,%.2lf, %.2lf", ProgBar.GetPos(), tf->av1, tf->av2);
 	ProgTxtCtr.SetWindowTextW(str);
 	return 0;
+}
+
+void MyDlg::OnBnClickedButton2()
+{
+	// TODO: добавьте свой код обработчика уведомлений
+	tr.stop = true;
 }
