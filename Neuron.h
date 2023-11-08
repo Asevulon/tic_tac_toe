@@ -1,12 +1,19 @@
 #pragma once
+#include<thread>
 
 #include<afxwin.h>
 #include<vector>
+#include<stack>
 using namespace std;
 
 #define PERFECT_SCORE 27.
 #define DRAW_SCORE 9
 #define MS_INCRBAR WM_USER + 5
+
+#define ROTATELEFT		0
+#define ROTATERIGHT		1
+#define REFLECTH		2
+#define REFLECTV		3
 struct neuron
 {
 	double out = 0;
@@ -30,23 +37,32 @@ private:
 protected:
 	inline void ProcessNeuron(neuron& n, vector<double>& in, int len);
 	inline double f(double x);
+	
+	template<typename T> inline void RotateLeft(vector<T>& data);
+	template<typename T> inline void RotateRight(vector<T>& data);
+	template<typename T> inline void ReflectV(vector<T>& data);
+	template<typename T> inline void ReflectH(vector<T>& data);
+	template<typename T> inline void Swap(vector<T>& data, int i, int j);
 public:
 	NW::NW(vector<int>& LS, int Enters);
-
+	NW& NW::operator =(const NW& nw);
 	template<typename T>
 	inline double Calc(vector<T>& in);
 	inline void NW::MakeChild(NW& left, NW& right);
 	inline void NW::Mutate();
 	inline int MakePredictions(vector<int>& in, int turn);
-
+	inline bool TryToFind(vector<int>& data, stack<int>& actions);
+	inline void RestoreData(vector<int>& data, stack<int>& actions);
+	inline void RestoreMax(vector<double>& data, stack<int>actions);
 	double score;
 	double avscore;
 	bool killme = false;
+	int wins = 0;
 };
 
 
 const double MutationVaraity = 0.5;
-const double KillVaraity = 0.5;
+const double KillVaraity = 0.8;
 
 typedef  NW* link;
 class Trainer
@@ -54,16 +70,19 @@ class Trainer
 private:
 	vector<NW>P1;
 	vector<NW>P2;
-	static const int _size = 64;
-	static const int _gamesvsrand = 50;
-	vector<int>LS = { 9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,1 };
-
+	static const int _size = 30;
+	static const int _gamesvsrand = 10;
+	static const int _ForbidToStop = 5;
+	vector<int>LS = { 12,3, 1};
+	int ForbidCtr;
 protected:
-	inline int Roulete(vector<NW>& data);
 	void Trainer::scoreVSrandom(NW& p, int turn);
+	thread* makethread(int left, int right);
+	void Trainer::scorefirst(NW& p1, NW& p2);
+	void Trainer::scoresecond(NW& p1, NW& p2);
 
 public:
-	int TrainLimit = 1000;
+	int TrainLimit = 100000;
 	Trainer();
 	HWND parent;
 	void GetBest(link& p1, link& p2);
@@ -84,4 +103,25 @@ struct TrainerInfo
 	double av2 = 0;
 	int win1 = 0;
 	int win2 = 0;
+};
+
+
+class MyTree
+{
+private:
+
+	struct Node
+	{
+		int val = 0;
+		Node* next[3] = { nullptr,nullptr,nullptr };
+	};
+
+	Node start;
+	UINT64 count = 0;
+protected:
+
+public:
+	void Add(vector<int>& data);
+	bool Seek(vector<int>& data);
+
 };

@@ -57,7 +57,12 @@ void GameDialog::OnBnClickedOk()
 		data[4] = 1;
 		zeros--;
 	}
-	if (gm == nvp)PostMessage(MS_DONEURONTURN);
+	if (gm == nvp)
+	{
+		drw.turn = false;
+		data[4] = 1;
+		zeros--;
+	}
 	
 	drw.Invalidate();
 }
@@ -249,8 +254,9 @@ afx_msg LRESULT GameDialog::OnMsDoBotTurn(WPARAM wParam, LPARAM lParam)
 {
 	int val = 1;
 	if (drw.turn == 0)val = -1;
-	if (gm == pvn)g_id = P2->MakePredictions(data, -1);
-	if (gm == nvp)g_id = P1->MakePredictions(data, 1);
+	bool bot = true;
+	if (gm == pve)bot = false;
+	minmax(data, zeros, val, bot, 0);
 	data[g_id] = val;
 	drw.turn = !drw.turn;
 	PostMessage(MS_DETERMINEWINNERONBOTTURN);
