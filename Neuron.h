@@ -70,10 +70,10 @@ class Trainer
 private:
 	vector<NW>P1;
 	vector<NW>P2;
-	static const int _size = 30;
+	static const int _size = 500;
 	static const int _gamesvsrand = 10;
 	static const int _ForbidToStop = 5;
-	vector<int>LS = { 12,3, 1};
+	vector<int>LS = { 15,5, 1};
 	int ForbidCtr;
 protected:
 	void Trainer::scoreVSrandom(NW& p, int turn);
@@ -89,6 +89,12 @@ public:
 	inline void score(NW& p1, NW& p2);
 	void train();
 	bool stop = false;
+	NW* b1 = nullptr;
+	NW* b2 = nullptr;
+	NW* b1final;
+	NW* b2final;
+	bool b1found = false;
+	bool b2found = false;
 };
 
 #define DRAW 1000

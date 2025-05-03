@@ -617,6 +617,8 @@ thread* Trainer::makethread(int left, int right)
 
 void Trainer::train()
 {
+	b1found = false;
+	b2found = false;
 	int counter = 0;
 	gamelog.open("gamelog.txt");
 	while (1)
@@ -843,8 +845,21 @@ void Trainer::train()
 		SendMessageW(parent, MS_INCRBAR, NULL, (LPARAM) & TF);
 		counter++;
 		if (counter > TrainLimit)break;
-		if ((fabs(avscore1 - 18) < 0.1) && (fabs(avscore2 - 18) < 0.1))break;
+		//if ((fabs(avscore1 - 18) < 0.1) && (fabs(avscore2 - 18) < 0.1))break;
 		if (stop)break;
+
+		GetBest(b1, b2);
+		if (b1->avscore > 26)
+		{
+			b1found = true;
+			b1final = new NW(*b1);
+		}
+		if (b2->avscore > 26)
+		{
+			b2found = true;
+			b2final = new NW(*b2);
+		}
+		if (b1found && b2found)break;
 	}
 	gamelog.close();
 }
